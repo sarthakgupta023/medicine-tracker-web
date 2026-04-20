@@ -23,4 +23,6 @@ public class User {
     private String password;
 
     private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
 }
