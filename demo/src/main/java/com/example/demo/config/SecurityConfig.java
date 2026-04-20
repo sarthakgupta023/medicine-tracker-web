@@ -44,20 +44,29 @@ public class SecurityConfig {
                                 // Stateless session — no HttpSession
                                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                                // Public routes
+                                // Authorization rules
                                 .authorizeHttpRequests(auth -> auth
                                                 .requestMatchers(
                                                                 "/user/login",
                                                                 "/user/signup",
+                                                                "/user/register",
                                                                 "/oauth2/**",
-                                                                "/login/oauth2/**")
+                                                                "/login/oauth2/**",
+                                                                "/login/oauth2/code/**",
+                                                                "/api/public/**")
                                                 .permitAll()
                                                 .anyRequest().authenticated())
 
-                                // OAuth2 login
+                                // OAuth2 login configuration
                                 .oauth2Login(oauth -> oauth
+                                                .loginPage("/login")
+                                                .authorizationEndpoint(auth -> auth
+                                                                .baseUri("/oauth2/authorize"))
+                                                .redirectionEndpoint(redir -> redir
+                                                                .baseUri("/login/oauth2/code/*"))
                                                 .successHandler(oAuth2SuccessHandler)
-                                                .failureUrl(frontendUrl + "/login?error=oauth_failed"))
+                                                .failureUrl(frontendUrl
+                                                                + "/login?error=oauth_failed&error_description=Authentication+Failed"))
 
                                 // JWT filter before Spring's auth filter
                                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
@@ -68,9 +77,17 @@ public class SecurityConfig {
         @Bean
         public CorsConfigurationSource corsConfigurationSource() {
                 CorsConfiguration config = new CorsConfiguration();
-                config.setAllowedOrigins(List.of(frontendUrl, "http://localhost:5173", "http://localhost:3000"));
-                config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+
+                config.setAllowedOrigins(List.of(
+                                frontendUrl,
+                                "http://localhost:5173",
+                                "http://localhost:3000",
+                                "http://127.0.0.1:5173",
+                                "http://127.0.0.1:3000"));
+
+                config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
                 config.setAllowedHeaders(List.of("*"));
+                config.setExposedHeaders(List.of("Authorization", "Content-Type"));
                 config.setAllowCredentials(true);
                 config.setMaxAge(3600L);
 
