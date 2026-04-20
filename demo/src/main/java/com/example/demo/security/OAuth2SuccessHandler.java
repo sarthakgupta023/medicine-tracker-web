@@ -57,7 +57,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String token = jwtUtil.generateToken(user.getId(), user.getEmail());
 
         String redirectUrl = UriComponentsBuilder
-                .fromUriString(frontendUrl + "/oauth2/callback")
+                .fromUriString(frontendUrl + "/login")
                 .queryParam("token", token)
                 .queryParam("userId", user.getId())
                 .queryParam("email", user.getEmail())
